@@ -151,7 +151,7 @@ class ReportService:
         wb.save(buffer)
         buffer.seek(0)
         
-        filename = f"retailiq_profile_{ds.filename.replace(' ', '_').lower()}.xlsx"
+        filename = f"insightflow_profile_{ds.filename.replace(' ', '_').lower()}.xlsx"
         if not filename.endswith(".xlsx"):
             filename += ".xlsx"
             
@@ -362,7 +362,7 @@ class ReportService:
         doc.build(story)
         buffer.seek(0)
         
-        filename = f"retailiq_report_{ds.filename.replace(' ', '_').lower()}.pdf"
+        filename = f"insightflow_report_{ds.filename.replace(' ', '_').lower()}.pdf"
         if not filename.endswith(".pdf"):
             filename += ".pdf"
             

@@ -344,7 +344,7 @@ export const Upload: React.FC = () => {
             </div>
             <div className="p-3 bg-slate-900/80 rounded border border-slate-800 text-xs">
               <p className="font-bold text-emerald-400 uppercase tracking-wider text-[10px]">Extensible Domain Recognition</p>
-              <p className="text-slate-400 mt-1 leading-relaxed">Intelligently classifies datasets into Retail, Finance, HR, Healthcare, Marketing, or General Business.</p>
+              <p className="text-slate-400 mt-1 leading-relaxed">Intelligently classifies datasets into InsightFlow, Finance, HR, Healthcare, Marketing, or General Business.</p>
             </div>
           </div>
         </div>

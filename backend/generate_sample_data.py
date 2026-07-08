@@ -15,11 +15,11 @@ def generate_data():
     ]
     
     product_options = [
-        {"sku": "SKU-ELEC-101", "name": "Quantum Pro Headset", "cat": "Electronics", "cost": 45.0, "retail": 89.99},
-        {"sku": "SKU-ELEC-102", "name": "OptiView LED Monitor", "cat": "Electronics", "cost": 120.0, "retail": 249.99},
-        {"sku": "SKU-APPL-201", "name": "AeroBreeze Smart Fan", "cat": "Appliances", "cost": 30.0, "retail": 59.99},
-        {"sku": "SKU-FURN-301", "name": "ErgoComfort Desk Chair", "cat": "Furniture", "cost": 85.0, "retail": 179.99},
-        {"sku": "SKU-CLOT-401", "name": "AeroWeave Sports Jacket", "cat": "Clothing", "cost": 15.0, "retail": 39.99}
+        {"sku": "SKU-ELEC-101", "name": "Quantum Pro Headset", "cat": "Electronics", "cost": 45.0, "insightflow": 89.99},
+        {"sku": "SKU-ELEC-102", "name": "OptiView LED Monitor", "cat": "Electronics", "cost": 120.0, "insightflow": 249.99},
+        {"sku": "SKU-APPL-201", "name": "AeroBreeze Smart Fan", "cat": "Appliances", "cost": 30.0, "insightflow": 59.99},
+        {"sku": "SKU-FURN-301", "name": "ErgoComfort Desk Chair", "cat": "Furniture", "cost": 85.0, "insightflow": 179.99},
+        {"sku": "SKU-CLOT-401", "name": "AeroWeave Sports Jacket", "cat": "Clothing", "cost": 15.0, "insightflow": 39.99}
     ]
     
     customer_options = [
@@ -45,9 +45,9 @@ def generate_data():
         
         qty = np.random.randint(1, 6)
         # Introduce currency formatting and anomalies
-        unit_price = f"${prod['retail']}" if np.random.rand() > 0.1 else prod['retail']
+        unit_price = f"${prod['insightflow']}" if np.random.rand() > 0.1 else prod['insightflow']
         cost_price = prod['cost']
-        retail_price = prod['retail']
+        insightflow_price = prod['insightflow']
         
         row = {
             "order_number": order_num,
@@ -66,7 +66,7 @@ def generate_data():
             "quantity": qty,
             "unit_price": unit_price,
             "cost_price": cost_price,
-            "retail_price": retail_price,
+            "insightflow_price": insightflow_price,
             "payment_method": np.random.choice(["Credit Card", "PayPal", "Apple Pay", "Cash"]),
             "payment_status": "Success",
             "refund_quantity": 0,
@@ -94,8 +94,8 @@ def generate_data():
     df = pd.concat([df, df.iloc[10:15]], ignore_index=True)
     
     # Save
-    df.to_csv("../retail_sample.csv", index=False)
-    print(f"Sample dataset containing {len(df)} rows written to retail_sample.csv")
+    df.to_csv("../insightflow_sample.csv", index=False)
+    print(f"Sample dataset containing {len(df)} rows written to insightflow_sample.csv")
 
 if __name__ == "__main__":
     generate_data()

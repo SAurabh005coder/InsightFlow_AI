@@ -23,7 +23,7 @@ export const Reports: React.FC = () => {
     const url = type === 'pdf' 
       ? `/api/v1/reports/export/pdf?dataset_id=${datasetId}` 
       : `/api/v1/reports/export/excel?dataset_id=${datasetId}`;
-    const filename = type === 'pdf' ? 'retailiq_executive_report.pdf' : 'retailiq_business_report.xlsx';
+    const filename = type === 'pdf' ? 'insightflow_executive_report.pdf' : 'insightflow_business_report.xlsx';
 
     try {
       const token = localStorage.getItem('token');

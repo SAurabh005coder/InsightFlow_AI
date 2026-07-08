@@ -1,6 +1,6 @@
-# RetailIQ - AI-Powered Retail Business Analytics Platform
+# InsightFlow AI - AI-Powered Retail Business Analytics Platform
 
-RetailIQ is an enterprise-grade, B2B Business Intelligence (BI) and predictive analytics application designed to ingest raw Point-of-Sale (POS) transactions, clean it, execute sub-second multi-dimensional analytical queries, and output predictive forecasting and machine learning metrics. 
+InsightFlow AI is an enterprise-grade, B2B Business Intelligence (BI) and predictive analytics application designed to ingest raw Point-of-Sale (POS) transactions, clean it, execute sub-second multi-dimensional analytical queries, and output predictive forecasting and machine learning metrics. 
 
 Designed specifically as an **MCA Semester 3 Minor Project** and constructed with senior software engineering standards.
 
@@ -62,12 +62,12 @@ Designed specifically as an **MCA Semester 3 Minor Project** and constructed wit
 
 ## 💾 Relational Database Schema (3NF)
 
-RetailIQ's database is fully normalized to Third Normal Form (3NF) standard containing 15 tables:
+InsightFlow AI's database is fully normalized to Third Normal Form (3NF) standard containing 15 tables:
 1. **roles**: User roles (CEO, Store_Manager, Sales_Manager, Data_Analyst).
 2. **users**: Platform credentials and activation flags.
-3. **stores**: Regional retail branch locations.
+3. **stores**: Regional insightflow branch locations.
 4. **categories**: Product groupings with parent hierarchies.
-5. **products**: Catalog items, unit cost/retail pricing constraints.
+5. **products**: Catalog items, unit cost/insightflow pricing constraints.
 6. **customers**: Customer registry and K-Means segmentation labels.
 7. **orders**: Transaction header (order date, store, total amount).
 8. **order_items**: Transaction details (SKUs, quantity, net amount).
@@ -86,7 +86,7 @@ RetailIQ's database is fully normalized to Third Normal Form (3NF) standard cont
 ### Prerequisites
 * **Node.js** v20+ & **npm**
 * **Python** v3.11 / v3.12 / v3.14+
-* **PostgreSQL** running locally on port `5432` (Optional. Application automatically falls back to an SQLite database file `retailiq.db` if PostgreSQL is unreachable).
+* **PostgreSQL** running locally on port `5432` (Optional. Application automatically falls back to an SQLite database file `insightflow_ai.db` if PostgreSQL is unreachable).
 
 ### 1. Backend Service Configuration
 1. Open a terminal and navigate to the backend directory:
@@ -102,7 +102,7 @@ RetailIQ's database is fully normalized to Third Normal Form (3NF) standard cont
    ```bash
    pip install -r requirements.txt
    ```
-4. Seed mock retail transactions (generates a `retail_sample.csv` in the root folder):
+4. Seed mock insightflow transactions (generates a `insightflow_sample.csv` in the root folder):
    ```bash
    python generate_sample_data.py
    ```
@@ -145,7 +145,7 @@ To run the test suite:
 1. Register an account as a **CEO** or **Data Analyst** in the web interface.
 2. Log in using your registered credentials.
 3. Click the **Upload Dataset** tab in the sidebar.
-4. Drag and drop the `retail_sample.csv` file generated in your root directory.
+4. Drag and drop the `insightflow_sample.csv` file generated in your root directory.
 5. Click **Execute Data Clean**. The ETL system will output duplicate removal logs, median/mode imputations, and outliers counts.
 6. Return to the **Dashboard** to see the interactive charts, growth timelines, and AI briefings populated.
 7. Click the **Reports** tab to download a styled PDF brief or multi-sheet Excel log.

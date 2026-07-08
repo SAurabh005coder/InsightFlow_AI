@@ -169,7 +169,7 @@ export const Settings: React.FC = () => {
               <span>Application Theme</span>
             </h3>
             <p className="text-xs text-slate-500 leading-relaxed">
-              RetailIQ defaults to a premium dark theme.
+              InsightFlow AI defaults to a premium dark theme.
             </p>
             <div className="flex items-center space-x-2 p-2 bg-slate-900 border border-slate-800 rounded-lg w-fit">
               <button className="p-2 rounded bg-slate-950 text-cyan-400 shadow flex items-center space-x-1.5 text-xs font-semibold">

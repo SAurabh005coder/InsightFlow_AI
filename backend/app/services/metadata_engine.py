@@ -132,7 +132,7 @@ class MetadataEngine:
         col_names_lower = [c["column_name"].lower() for c in columns]
         
         domain_scores = {
-            "Retail": 0.0,
+            "InsightFlow": 0.0,
             "Healthcare": 0.0,
             "HR": 0.0,
             "Finance": 0.0,
@@ -151,9 +151,9 @@ class MetadataEngine:
         fin_keywords = ["asset", "liability", "expense", "balance", "capital", "portfolio", "credit", "debit", "equity", "cash"]
         domain_scores["Finance"] = sum(1 for kw in fin_keywords if any(kw in col for col in col_names_lower)) / len(fin_keywords)
         
-        # Retail / E-Commerce Score
-        retail_keywords = ["sku", "store", "order_number", "cart", "product", "sales", "transaction", "quantity", "return", "refund"]
-        domain_scores["Retail"] = sum(1 for kw in retail_keywords if any(kw in col for col in col_names_lower)) / len(retail_keywords)
+        # InsightFlow / E-Commerce Score
+        insightflow_keywords = ["sku", "store", "order_number", "cart", "product", "sales", "transaction", "quantity", "return", "refund"]
+        domain_scores["InsightFlow"] = sum(1 for kw in insightflow_keywords if any(kw in col for col in col_names_lower)) / len(insightflow_keywords)
         
         # Marketing Score
         mkt_keywords = ["campaign", "lead", "click", "ctr", "impressions", "conversion", "roi", "ad_", "channel", "cost_per"]

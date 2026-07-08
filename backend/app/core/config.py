@@ -8,7 +8,7 @@ class Settings(BaseSettings):
     API_V1_STR: str = "/api/v1"
     
     # Security
-    SECRET_KEY: str = "supersecretkeyretailiq1234567890abcdef"
+    SECRET_KEY: str = "supersecretkeyinsightflowai1234567890abcdef"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 7  # 7 days
     ALGORITHM: str = "HS256"
     

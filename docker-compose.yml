@@ -20,7 +20,7 @@ services:
     restart: always
     environment:
       - DATABASE_URL=postgresql://postgres:postgres@db:5432/insightflow_ai
-      - SECRET_KEY=supersecretkeyretailiq1234567890abcdef
+      - SECRET_KEY=supersecretkeyinsightflowai1234567890abcdef
     ports:
       - "8000:8000"
     volumes:

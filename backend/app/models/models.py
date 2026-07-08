@@ -100,12 +100,12 @@ class Product(Base):
     product_name = Column(String(150), nullable=False)
     category_id = Column(UUID(as_uuid=True), ForeignKey("categories.category_id", ondelete="RESTRICT"), nullable=False)
     cost_price = Column(Numeric(12, 2), nullable=False)
-    retail_price = Column(Numeric(12, 2), nullable=False)
+    insightflow_price = Column(Numeric(12, 2), nullable=False)
     
     __table_args__ = (
         CheckConstraint("cost_price >= 0", name="chk_cost_price_positive"),
-        CheckConstraint("retail_price >= 0", name="chk_retail_price_positive"),
-        CheckConstraint("retail_price >= cost_price", name="chk_price_relationship"),
+        CheckConstraint("insightflow_price >= 0", name="chk_insightflow_price_positive"),
+        CheckConstraint("insightflow_price >= cost_price", name="chk_price_relationship"),
     )
     
     category = relationship("Category", back_populates="products")

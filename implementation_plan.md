@@ -1,6 +1,6 @@
-# Implementation Plan - RetailIQ (AI-Powered Retail Analytics Platform)
+# Implementation Plan - InsightFlow AI (AI-Powered Retail Analytics Platform)
 
-This document provides a comprehensive technical blueprint for the design and construction of RetailIQ, an enterprise-grade Business Intelligence and Retail Analytics Platform. It is designed to satisfy the academic requirements of an MCA Semester 3 Minor Project and serve as a showcase for senior data engineering and full-stack positions.
+This document provides a comprehensive technical blueprint for the design and construction of InsightFlow AI, an enterprise-grade Business Intelligence and Retail Analytics Platform. It is designed to satisfy the academic requirements of an MCA Semester 3 Minor Project and serve as a showcase for senior data engineering and full-stack positions.
 
 ## User Review Required
 
@@ -73,9 +73,9 @@ erDiagram
 ### Table Definitions
 1. **roles**: Role-based access controls (`role_id`, `role_name`, `description`).
 2. **users**: Platform users (`user_id`, `email`, `password_hash`, `first_name`, `last_name`, `role_id`, `is_active`).
-3. **stores**: Retail stores (`store_id`, `store_code`, `store_name`, `region`, `city`, `state`).
+3. **stores**: InsightFlow stores (`store_id`, `store_code`, `store_name`, `region`, `city`, `state`).
 4. **categories**: Product groupings (`category_id`, `category_name`, `parent_category_id`).
-5. **products**: Catalog items (`product_id`, `sku`, `product_name`, `category_id`, `cost_price`, `retail_price`).
+5. **products**: Catalog items (`product_id`, `sku`, `product_name`, `category_id`, `cost_price`, `insightflow_price`).
 6. **customers**: Registered buyers (`customer_id`, `customer_code`, `first_name`, `last_name`, `email`, `segment`, `registration_date`).
 7. **orders**: Transaction records (`order_id`, `order_number`, `customer_id`, `store_id`, `order_date`, `total_amount`).
 8. **order_items**: Line items (`order_item_id`, `order_id`, `product_id`, `quantity`, `unit_price`, `net_amount`).

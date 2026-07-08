@@ -75,7 +75,7 @@ class ProductBase(BaseModel):
     sku: str
     product_name: str
     cost_price: float
-    retail_price: float
+    insightflow_price: float
 
 class ProductResponse(ProductBase):
     product_id: UUID

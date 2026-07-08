@@ -55,7 +55,7 @@ def test_auth_and_user_flows():
     register_response = client.post(
         "/api/v1/auth/register",
         json={
-            "email": "analyst@retailiq.com",
+            "email": "analyst@insightflowai.com",
             "password": "securepassword123",
             "first_name": "Saurabh",
             "last_name": "Sahu",
@@ -64,14 +64,14 @@ def test_auth_and_user_flows():
     )
     assert register_response.status_code == 200
     data = register_response.json()
-    assert data["email"] == "analyst@retailiq.com"
+    assert data["email"] == "analyst@insightflowai.com"
     assert data["first_name"] == "Saurabh"
 
     # 2. Login
     login_response = client.post(
         "/api/v1/auth/login",
         data={
-            "username": "analyst@retailiq.com",
+            "username": "analyst@insightflowai.com",
             "password": "securepassword123"
         }
     )
@@ -83,10 +83,10 @@ def test_auth_and_user_flows():
 def test_data_cleaning_logic():
     # Build a DataFrame with nulls and outliers
     df = pd.DataFrame([
-        {"quantity": 5, "unit_price": "$10.00", "cost_price": 5.0, "retail_price": 10.0, "category_name": "Electronics"},
-        {"quantity": 10, "unit_price": "10.00", "cost_price": 5.0, "retail_price": 10.0, "category_name": np.nan},
-        {"quantity": np.nan, "unit_price": "10.00", "cost_price": 5.0, "retail_price": 10.0, "category_name": "Electronics"},
-        {"quantity": 500, "unit_price": "10.00", "cost_price": 5.0, "retail_price": 10.0, "category_name": "Electronics"},
+        {"quantity": 5, "unit_price": "$10.00", "cost_price": 5.0, "insightflow_price": 10.0, "category_name": "Electronics"},
+        {"quantity": 10, "unit_price": "10.00", "cost_price": 5.0, "insightflow_price": 10.0, "category_name": np.nan},
+        {"quantity": np.nan, "unit_price": "10.00", "cost_price": 5.0, "insightflow_price": 10.0, "category_name": "Electronics"},
+        {"quantity": 500, "unit_price": "10.00", "cost_price": 5.0, "insightflow_price": 10.0, "category_name": "Electronics"},
     ])
     
     cleaned_df, report = clean_dataframe(df)
@@ -172,8 +172,8 @@ def test_full_system_e2e():
     
     # 3. Ingest Dataset
     df_mock = pd.DataFrame([
-        {"order_number": "ORD-101", "order_date": "2026-06-01", "store_code": "ST01", "store_name": "Main Outlet", "region": "North", "city": "Chicago", "state": "IL", "customer_code": "CUST-01", "customer_first_name": "Saurabh", "customer_last_name": "Sahu", "sku": "SKU-01", "product_name": "Quantum Headset", "category_name": "Electronics", "quantity": 2, "unit_price": 50.00, "cost_price": 30.00, "retail_price": 50.00, "payment_method": "Credit Card", "status": "Success", "is_returned": 0, "refund_amount": 0.0},
-        {"order_number": "ORD-102", "order_date": "2026-06-02", "store_code": "ST01", "store_name": "Main Outlet", "region": "North", "city": "Chicago", "state": "IL", "customer_code": "CUST-02", "customer_first_name": "Alice", "customer_last_name": "Smith", "sku": "SKU-02", "product_name": "Aero Fan", "category_name": "Appliances", "quantity": 1, "unit_price": 100.00, "cost_price": 60.00, "retail_price": 100.00, "payment_method": "PayPal", "status": "Success", "is_returned": 0, "refund_amount": 0.0}
+        {"order_number": "ORD-101", "order_date": "2026-06-01", "store_code": "ST01", "store_name": "Main Outlet", "region": "North", "city": "Chicago", "state": "IL", "customer_code": "CUST-01", "customer_first_name": "Saurabh", "customer_last_name": "Sahu", "sku": "SKU-01", "product_name": "Quantum Headset", "category_name": "Electronics", "quantity": 2, "unit_price": 50.00, "cost_price": 30.00, "insightflow_price": 50.00, "payment_method": "Credit Card", "status": "Success", "is_returned": 0, "refund_amount": 0.0},
+        {"order_number": "ORD-102", "order_date": "2026-06-02", "store_code": "ST01", "store_name": "Main Outlet", "region": "North", "city": "Chicago", "state": "IL", "customer_code": "CUST-02", "customer_first_name": "Alice", "customer_last_name": "Smith", "sku": "SKU-02", "product_name": "Aero Fan", "category_name": "Appliances", "quantity": 1, "unit_price": 100.00, "cost_price": 60.00, "insightflow_price": 100.00, "payment_method": "PayPal", "status": "Success", "is_returned": 0, "refund_amount": 0.0}
     ])
     csv_file = io.BytesIO()
     df_mock.to_csv(csv_file, index=False)
@@ -187,7 +187,7 @@ def test_full_system_e2e():
     assert ingest_res.status_code == 200, f"Ingest failed: {ingest_res.text}"
     report = ingest_res.json()
     assert report["status"] == "Success"
-    assert report["domain"] == "Retail"
+    assert report["domain"] == "InsightFlow"
     assert report["confidence_score"] > 40.0
     
     dataset_id = report["upload_id"]

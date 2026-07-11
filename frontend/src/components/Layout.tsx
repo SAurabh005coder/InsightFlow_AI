@@ -13,8 +13,10 @@ import {
   User as UserIcon,
   Menu,
   X,
-  Database
+  Database,
+  Sparkles
 } from 'lucide-react';
+import { AIAssistant } from './AIAssistant';
 
 export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user, role, logout } = useAuth();
@@ -23,6 +25,7 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
   const [mobileOpen, setMobileOpen] = React.useState(false);
   const [datasets, setDatasets] = React.useState<any[]>([]);
   const [activeDataset, setActiveDataset] = React.useState<string>('');
+  const [isAIOpen, setIsAIOpen] = React.useState<boolean>(false);
 
   React.useEffect(() => {
     const fetchDatasets = async () => {
@@ -180,6 +183,20 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
           {children}
         </div>
       </main>
+
+      {/* Floating AI assistant button */}
+      {user && (
+        <button
+          onClick={() => setIsAIOpen(true)}
+          className="fixed bottom-6 right-6 z-45 bg-gradient-to-tr from-cyan-500 to-indigo-500 text-slate-950 p-4 rounded-full shadow-lg shadow-cyan-500/10 hover:shadow-cyan-500/30 hover:scale-105 active:scale-95 transition-all flex items-center justify-center font-bold"
+          title="Open AI Assistant"
+        >
+          <Sparkles size={20} className="animate-pulse text-slate-950" />
+        </button>
+      )}
+
+      {/* AI Assistant Chat Drawer */}
+      <AIAssistant isOpen={isAIOpen} onClose={() => setIsAIOpen(false)} />
     </div>
   );
 };

@@ -4,7 +4,7 @@ from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
 from app.core.database import engine, Base
-from app.api import auth, ingest, analytics, reports
+from app.api import auth, ingest, analytics, reports, ai
 
 # Setup logging
 logging.basicConfig(level=logging.INFO)
@@ -46,6 +46,7 @@ app.include_router(auth.router, prefix=f"{settings.API_V1_STR}/auth", tags=["aut
 app.include_router(ingest.router, prefix=f"{settings.API_V1_STR}/datasets", tags=["ingestion"])
 app.include_router(analytics.router, prefix=f"{settings.API_V1_STR}/analytics", tags=["analytics"])
 app.include_router(reports.router, prefix=f"{settings.API_V1_STR}/reports", tags=["reports"])
+app.include_router(ai.router, prefix=f"{settings.API_V1_STR}/ai", tags=["ai"])
 
 @app.get("/")
 def read_root():

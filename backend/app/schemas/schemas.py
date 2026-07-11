@@ -159,3 +159,34 @@ class DynamicDashboardResponse(BaseModel):
     kpis: List[DynamicKPI]
     charts: List[DynamicChart]
     insights: List[str]
+
+# Chat / AI Schemas
+class ChatSessionCreate(BaseModel):
+    dataset_id: Optional[str] = None
+    title: Optional[str] = "New Chat"
+
+class ChatSessionResponse(BaseModel):
+    session_id: UUID
+    title: str
+    dataset_id: Optional[UUID] = None
+    created_at: datetime
+    updated_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)
+
+class ChatMessageCreate(BaseModel):
+    content: str = Field(..., min_length=1)
+
+class ChatMessageResponse(BaseModel):
+    message_id: UUID
+    role: str  # "user" or "assistant"
+    content: str
+    created_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)
+
+class ChatResponseWrapper(BaseModel):
+    assistant_response: str
+    session_id: UUID
+    messages: List[ChatMessageResponse]
+

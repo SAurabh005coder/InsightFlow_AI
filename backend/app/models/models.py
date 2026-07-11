@@ -43,6 +43,7 @@ class User(Base):
     uploads = relationship("UploadHistory", back_populates="user")
     audit_logs = relationship("AuditLog", back_populates="user")
     workspaces = relationship("Workspace", back_populates="owner", cascade="all, delete-orphan")
+    chat_sessions = relationship("ChatSession", back_populates="user", cascade="all, delete-orphan")
 
 class Workspace(Base):
     __tablename__ = "workspaces"
@@ -284,6 +285,7 @@ class Dataset(Base):
     kpis = relationship("GeneratedKPI", back_populates="dataset", cascade="all, delete-orphan")
     insights = relationship("GeneratedInsight", back_populates="dataset", cascade="all, delete-orphan")
     versions = relationship("DatasetVersion", back_populates="dataset", cascade="all, delete-orphan")
+    chat_sessions = relationship("ChatSession", back_populates="dataset", cascade="all, delete-orphan")
 
 class DatasetVersion(Base):
     __tablename__ = "dataset_versions"
@@ -347,3 +349,28 @@ class GeneratedInsight(Base):
     severity = Column(String(30), default="info")
     
     dataset = relationship("Dataset", back_populates="insights")
+
+class ChatSession(Base):
+    __tablename__ = "chat_sessions"
+    
+    session_id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.user_id", ondelete="CASCADE"), nullable=False)
+    dataset_id = Column(UUID(as_uuid=True), ForeignKey("datasets.dataset_id", ondelete="SET NULL"), nullable=True)
+    title = Column(String(255), nullable=False, default="New Chat")
+    created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+    updated_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
+    
+    user = relationship("User", back_populates="chat_sessions")
+    dataset = relationship("Dataset", back_populates="chat_sessions")
+    messages = relationship("ChatMessage", back_populates="session", cascade="all, delete-orphan")
+
+class ChatMessage(Base):
+    __tablename__ = "chat_messages"
+    
+    message_id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    session_id = Column(UUID(as_uuid=True), ForeignKey("chat_sessions.session_id", ondelete="CASCADE"), nullable=False)
+    role = Column(String(50), nullable=False)  # "user" or "assistant"
+    content = Column(Text, nullable=False)
+    created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+    
+    session = relationship("ChatSession", back_populates="messages")

@@ -1,5 +1,5 @@
 import os
-from typing import List
+from typing import List, Optional
 from pydantic_settings import BaseSettings
 from pydantic import ConfigDict
 
@@ -23,6 +23,12 @@ class Settings(BaseSettings):
         "http://localhost:3000",
     ]
 
+    # AI/LLM configurations
+    AI_PROVIDER: str = "mock"
+    GEMINI_API_KEY: Optional[str] = None
+    OPENAI_API_KEY: Optional[str] = None
+
     model_config = ConfigDict(case_sensitive=True, env_file=".env")
 
 settings = Settings()
+

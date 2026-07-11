@@ -15,12 +15,16 @@ def export_excel(
     current_user = Depends(RoleChecker(["CEO", "Data_Analyst", "Store_Manager"]))
 ):
     try:
+        from app.api.deps import get_verified_dataset_id
+        dataset_id = get_verified_dataset_id(db, dataset_id, current_user.user_id)
         buffer, filename = ReportService.generate_excel_report(db, dataset_id)
         return StreamingResponse(
             buffer,
             media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
             headers={"Content-Disposition": f"attachment; filename={filename}"}
         )
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(
             status_code=500,
@@ -34,12 +38,16 @@ def export_pdf(
     current_user = Depends(RoleChecker(["CEO", "Data_Analyst", "Store_Manager"]))
 ):
     try:
+        from app.api.deps import get_verified_dataset_id
+        dataset_id = get_verified_dataset_id(db, dataset_id, current_user.user_id)
         buffer, filename = ReportService.generate_pdf_report(db, dataset_id)
         return StreamingResponse(
             buffer,
             media_type="application/pdf",
             headers={"Content-Disposition": f"attachment; filename={filename}"}
         )
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(
             status_code=500,

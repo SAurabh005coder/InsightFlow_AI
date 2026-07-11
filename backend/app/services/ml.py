@@ -26,7 +26,7 @@ class MLService:
         except (ValueError, TypeError):
             raise ValueError(f"Invalid dataset ID format: {dataset_id}")
             
-        file_path = os.path.join("storage", "datasets", f"{dataset_id}.parquet")
+        file_path = os.path.join("storage", "datasets", f"{dataset_uuid}.parquet")
         if not os.path.exists(file_path):
             raise FileNotFoundError("Parquet data file is missing.")
             
@@ -161,7 +161,7 @@ class MLService:
         except (ValueError, TypeError):
             raise ValueError(f"Invalid dataset ID format: {dataset_id}")
             
-        file_path = os.path.join("storage", "datasets", f"{dataset_id}.parquet")
+        file_path = os.path.join("storage", "datasets", f"{dataset_uuid}.parquet")
         if not os.path.exists(file_path):
             raise FileNotFoundError("Parquet data file is missing.")
             

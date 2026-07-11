@@ -30,7 +30,7 @@ def get_dashboard(
     current_user = Depends(RoleChecker(["CEO", "Store_Manager", "Sales_Manager", "Data_Analyst"]))
 ):
     try:
-        data = AnalyticsService.get_dashboard_summary(db, dataset_id)
+        data = AnalyticsService.get_dashboard_summary(db, dataset_id, user_id=str(current_user.user_id))
         return data
     except Exception as e:
         raise HTTPException(
@@ -46,16 +46,12 @@ def get_forecast(
     current_user = Depends(RoleChecker(["CEO", "Data_Analyst"]))
 ):
     try:
-        # Fallback dataset resolution
-        if not dataset_id:
-            from app.models.models import Dataset
-            recent = db.query(Dataset).order_by(Dataset.created_at.desc()).first()
-            if not recent:
-                raise HTTPException(status_code=400, detail="No datasets available for forecasting.")
-            dataset_id = str(recent.dataset_id)
-            
+        from app.api.deps import get_verified_dataset_id
+        dataset_id = get_verified_dataset_id(db, dataset_id, current_user.user_id)
         forecast_data = MLService.forecast_sales(db, dataset_id, days_ahead=days)
         return forecast_data
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(
             status_code=500,
@@ -69,16 +65,12 @@ def get_segmentation(
     current_user = Depends(RoleChecker(["CEO", "Data_Analyst"]))
 ):
     try:
-        # Fallback dataset resolution
-        if not dataset_id:
-            from app.models.models import Dataset
-            recent = db.query(Dataset).order_by(Dataset.created_at.desc()).first()
-            if not recent:
-                raise HTTPException(status_code=400, detail="No datasets available for segmentation.")
-            dataset_id = str(recent.dataset_id)
-            
+        from app.api.deps import get_verified_dataset_id
+        dataset_id = get_verified_dataset_id(db, dataset_id, current_user.user_id)
         segments_data = MLService.segment_customers(db, dataset_id)
         return segments_data
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(
             status_code=500,
@@ -98,20 +90,20 @@ def get_dataset_records(
     import duckdb
     import numpy as np
     from app.models.models import Dataset, ColumnMetadata
+    from app.api.deps import get_verified_dataset_id
     
     import uuid
-    if not dataset_id:
-        recent = db.query(Dataset).order_by(Dataset.created_at.desc()).first()
-        if not recent:
-            return {"columns": [], "records": [], "total": 0}
-        dataset_id = str(recent.dataset_id)
+    try:
+        dataset_id = get_verified_dataset_id(db, dataset_id, current_user.user_id)
+    except HTTPException:
+        return {"columns": [], "records": [], "total": 0}
         
     try:
         dataset_uuid = uuid.UUID(str(dataset_id))
     except (ValueError, TypeError):
         return {"columns": [], "records": [], "total": 0}
         
-    file_path = os.path.join("storage", "datasets", f"{dataset_id}.parquet")
+    file_path = os.path.join("storage", "datasets", f"{dataset_uuid}.parquet")
     if not os.path.exists(file_path):
         return {"columns": [], "records": [], "total": 0}
         

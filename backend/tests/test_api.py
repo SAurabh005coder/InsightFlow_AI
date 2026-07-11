@@ -241,3 +241,213 @@ def test_full_system_e2e():
             os.remove(storage_parquet)
         except Exception:
             pass
+
+def test_negative_uploads():
+    # Login
+    login_res = client.post(
+        "/api/v1/auth/login",
+        data={"username": "analyst@insightflowai.com", "password": "securepassword123"}
+    )
+    token = login_res.json()["access_token"]
+    headers = {"Authorization": f"Bearer {token}"}
+
+    # 1. Upload empty file
+    empty_file = io.BytesIO(b"")
+    res = client.post(
+        "/api/v1/datasets/ingest",
+        files={"file": ("empty.csv", empty_file, "text/csv")},
+        headers=headers
+    )
+    assert res.status_code == 400
+    assert "empty" in res.json()["detail"].lower() or "could not parse" in res.json()["detail"].lower()
+
+    # 2. Upload unsupported format
+    bad_format_file = io.BytesIO(b"some,data,here\n1,2,3")
+    res = client.post(
+        "/api/v1/datasets/ingest",
+        files={"file": ("malicious.sh", bad_format_file, "text/plain")},
+        headers=headers
+    )
+    assert res.status_code == 400
+    assert "invalid file format" in res.json()["detail"].lower()
+
+    # 3. Upload corrupted csv format
+    corrupted_zip_as_csv = io.BytesIO(b"PK\x03\x04\x14\x00\x08\x00\x08\x00blahblah")
+    res2 = client.post(
+        "/api/v1/datasets/ingest",
+        files={"file": ("corrupted.csv", corrupted_zip_as_csv, "text/csv")},
+        headers=headers
+    )
+    assert res2.status_code == 400
+    assert "could not parse" in res2.json()["detail"].lower() or "empty" in res2.json()["detail"].lower()
+
+def test_db_check_constraints():
+    from app.models.models import Product, Category
+    from sqlalchemy.exc import IntegrityError
+    
+    db = TestingSessionLocal()
+    try:
+        # Create a dummy category
+        cat = Category(category_name="Dummy Electronics For Checks")
+        db.add(cat)
+        db.commit()
+        
+        # 1. Negative cost_price
+        p1 = Product(
+            sku="SKU-NEG-COST",
+            product_name="Neg Cost Prod",
+            category_id=cat.category_id,
+            cost_price=-10.0,
+            insightflow_price=10.0
+        )
+        db.add(p1)
+        with pytest.raises(IntegrityError):
+            db.commit()
+        db.rollback()
+        
+        # 2. insightflow_price < cost_price
+        p2 = Product(
+            sku="SKU-BAD-REL",
+            product_name="Bad Relation Prod",
+            category_id=cat.category_id,
+            cost_price=20.0,
+            insightflow_price=15.0
+        )
+        db.add(p2)
+        with pytest.raises(IntegrityError):
+            db.commit()
+        db.rollback()
+        
+    finally:
+        db.close()
+
+def test_domain_classification_extended():
+    from app.services.metadata_engine import MetadataEngine
+    
+    # HR Dataset Profile
+    hr_profile = [
+        {"column_name": "employee_id", "data_type": "Integer", "semantic_type": "Customer_ID", "null_percentage": 0.0, "distinct_count": 10},
+        {"column_name": "monthly_salary", "data_type": "Float", "semantic_type": "Monetary", "null_percentage": 0.0, "distinct_count": 10},
+        {"column_name": "hire_date", "data_type": "DateTime", "semantic_type": "Date", "null_percentage": 0.0, "distinct_count": 10},
+        {"column_name": "job_role", "data_type": "Text", "semantic_type": "Text", "null_percentage": 0.0, "distinct_count": 10}
+    ]
+    domain, conf = MetadataEngine.classify_dataset_domain(hr_profile)
+    assert domain == "HR"
+    
+    # Healthcare Dataset Profile
+    hc_profile = [
+        {"column_name": "patient_id", "data_type": "Integer", "semantic_type": "Customer_ID", "null_percentage": 0.0, "distinct_count": 10},
+        {"column_name": "admission_date", "data_type": "DateTime", "semantic_type": "Date", "null_percentage": 0.0, "distinct_count": 10},
+        {"column_name": "diagnosis_code", "data_type": "Text", "semantic_type": "Text", "null_percentage": 0.0, "distinct_count": 10},
+        {"column_name": "doctor_name", "data_type": "Text", "semantic_type": "Text", "null_percentage": 0.0, "distinct_count": 10}
+    ]
+    domain, conf = MetadataEngine.classify_dataset_domain(hc_profile)
+    assert domain == "Healthcare"
+
+def test_role_auth_boundaries():
+    # 1. Register a Store_Manager
+    register_response = client.post(
+        "/api/v1/auth/register",
+        json={
+            "email": "manager@insightflowai.com",
+            "password": "managerpassword123",
+            "first_name": "Store",
+            "last_name": "Manager",
+            "role_name": "Store_Manager"
+        }
+    )
+    assert register_response.status_code == 200
+    
+    # 2. Login
+    login_response = client.post(
+        "/api/v1/auth/login",
+        data={
+            "username": "manager@insightflowai.com",
+            "password": "managerpassword123"
+        }
+    )
+    assert login_response.status_code == 200
+    token = login_response.json()["access_token"]
+    headers = {"Authorization": f"Bearer {token}"}
+    
+    # 3. Store_Manager trying to call /forecast endpoint should fail (restricted to CEO, Data_Analyst)
+    res = client.get("/api/v1/analytics/forecast", headers=headers)
+    assert res.status_code == 403
+    assert "permission" in res.json()["detail"].lower()
+
+
+def test_multi_user_dataset_isolation():
+    # 1. Register and Login User A
+    client.post(
+        "/api/v1/auth/register",
+        json={
+            "email": "user_a@insightflowai.com",
+            "password": "passwordA123",
+            "first_name": "User",
+            "last_name": "A",
+            "role_name": "Data_Analyst"
+        }
+    )
+    login_a = client.post(
+        "/api/v1/auth/login",
+        data={"username": "user_a@insightflowai.com", "password": "passwordA123"}
+    )
+    token_a = login_a.json()["access_token"]
+    headers_a = {"Authorization": f"Bearer {token_a}"}
+
+    # 2. Register and Login User B
+    client.post(
+        "/api/v1/auth/register",
+        json={
+            "email": "user_b@insightflowai.com",
+            "password": "passwordB123",
+            "first_name": "User",
+            "last_name": "B",
+            "role_name": "Data_Analyst"
+        }
+    )
+    login_b = client.post(
+        "/api/v1/auth/login",
+        data={"username": "user_b@insightflowai.com", "password": "passwordB123"}
+    )
+    token_b = login_b.json()["access_token"]
+    headers_b = {"Authorization": f"Bearer {token_b}"}
+
+    # 3. Ingest dataset under User A
+    df_mock_a = pd.DataFrame([
+        {"order_number": "ORD-A", "order_date": "2026-06-01", "store_code": "ST01", "store_name": "Main Outlet", "region": "North", "city": "Chicago", "state": "IL", "customer_code": "CUST-01", "customer_first_name": "User", "customer_last_name": "A", "sku": "SKU-01", "product_name": "Product A", "category_name": "Electronics", "quantity": 1, "unit_price": 50.00, "cost_price": 30.00, "insightflow_price": 50.00, "payment_method": "Credit Card", "status": "Success", "is_returned": 0, "refund_amount": 0.0}
+    ])
+    csv_a = io.BytesIO()
+    df_mock_a.to_csv(csv_a, index=False)
+    csv_a.seek(0)
+    
+    ingest_a = client.post(
+        "/api/v1/datasets/ingest",
+        files={"file": ("dataset_a.csv", csv_a, "text/csv")},
+        headers=headers_a
+    )
+    assert ingest_a.status_code == 200
+    dataset_a_id = ingest_a.json()["upload_id"]
+
+    # 4. Verify User A can list and fetch User A's dataset
+    list_a = client.get("/api/v1/analytics/datasets", headers=headers_a)
+    assert any(d["dataset_id"] == dataset_a_id for d in list_a.json())
+
+    # 5. Verify User B has NO datasets listed
+    list_b = client.get("/api/v1/analytics/datasets", headers=headers_b)
+    assert not any(d["dataset_id"] == dataset_a_id for d in list_b.json())
+
+    # 6. Verify User B calling dashboard with User A's dataset ID falls back to empty dashboard
+    dash_b = client.get(f"/api/v1/analytics/dashboard?dataset_id={dataset_a_id}", headers=headers_b)
+    assert dash_b.status_code == 200
+    assert dash_b.json()["dataset_id"] == ""
+
+    # Cleanup local parquet file created in test
+    storage_parquet = os.path.join("storage", "datasets", f"{dataset_a_id}.parquet")
+    if os.path.exists(storage_parquet):
+        try:
+            os.remove(storage_parquet)
+        except Exception:
+            pass
+
+

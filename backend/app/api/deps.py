@@ -53,3 +53,32 @@ class RoleChecker:
                 detail=f"User does not have permission. Required roles: {self.allowed_roles}",
             )
         return current_user
+
+def get_verified_dataset_id(
+    db: Session,
+    dataset_id: str | None,
+    user_id: uuid.UUID
+) -> str:
+    from app.models.models import Dataset
+    
+    target_dataset = None
+    if dataset_id:
+        try:
+            dataset_uuid = uuid.UUID(str(dataset_id))
+            ds = db.query(Dataset).filter(Dataset.dataset_id == dataset_uuid).first()
+            if ds and ds.uploaded_by == user_id:
+                target_dataset = ds
+        except (ValueError, TypeError):
+            pass
+            
+    if not target_dataset:
+        target_dataset = db.query(Dataset).filter(Dataset.uploaded_by == user_id).order_by(Dataset.created_at.desc()).first()
+        
+    if not target_dataset:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="No datasets found for this user."
+        )
+        
+    return str(target_dataset.dataset_id)
+

@@ -35,7 +35,7 @@ class ReportService:
         if not ds:
             raise ValueError("Dataset not found.")
             
-        file_path = os.path.join("storage", "datasets", f"{dataset_id}.parquet")
+        file_path = os.path.join("storage", "datasets", f"{dataset_uuid}.parquet")
         if not os.path.exists(file_path):
             raise FileNotFoundError("Dataset Parquet storage is missing.")
             

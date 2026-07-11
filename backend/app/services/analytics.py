@@ -1,4 +1,5 @@
 import os
+import uuid
 import duckdb
 import pandas as pd
 import numpy as np
@@ -10,31 +11,44 @@ from app.models.models import Dataset, ColumnMetadata, GeneratedKPI, GeneratedIn
 class AnalyticsService:
     @staticmethod
     def get_datasets_list(db: Session, user_id: str) -> List[Dict[str, Any]]:
-        query = """
-            SELECT dataset_id, filename, domain, confidence_score, record_count, created_at
-            FROM datasets
-            ORDER BY created_at DESC
-        """
-        rows = db.execute(text(query)).fetchall()
+        import uuid
+        try:
+            user_uuid = uuid.UUID(str(user_id))
+        except (ValueError, TypeError):
+            return []
+            
+        rows = db.query(Dataset).filter(Dataset.uploaded_by == user_uuid).order_by(Dataset.created_at.desc()).all()
         return [
             {
-                "dataset_id": str(r[0]),
-                "filename": r[1],
-                "domain": r[2],
-                "confidence_score": float(r[3]),
-                "record_count": int(r[4]),
-                "created_at": r[5].strftime("%Y-%m-%d %H:%M:%S") if hasattr(r[5], "strftime") else str(r[5])
+                "dataset_id": str(r.dataset_id),
+                "filename": r.filename,
+                "domain": r.domain,
+                "confidence_score": float(r.confidence_score),
+                "record_count": int(r.record_count),
+                "created_at": r.created_at.strftime("%Y-%m-%d %H:%M:%S") if hasattr(r.created_at, "strftime") else str(r.created_at)
             }
             for r in rows
         ]
 
     @staticmethod
-    def get_dashboard_summary(db: Session, dataset_id: str = None) -> Dict[str, Any]:
+    def get_dashboard_summary(db: Session, dataset_id: str = None, user_id: str = None) -> Dict[str, Any]:
         import uuid
+        
+        user_uuid = None
+        if user_id:
+            try:
+                user_uuid = uuid.UUID(str(user_id))
+            except (ValueError, TypeError):
+                pass
+
         # 1. Resolve dataset_id
         if not dataset_id:
-            # Find the most recently uploaded dataset
-            recent_ds = db.query(Dataset).order_by(Dataset.created_at.desc()).first()
+            # Find the most recently uploaded dataset by this user
+            if user_uuid:
+                recent_ds = db.query(Dataset).filter(Dataset.uploaded_by == user_uuid).order_by(Dataset.created_at.desc()).first()
+            else:
+                recent_ds = db.query(Dataset).order_by(Dataset.created_at.desc()).first()
+                
             if not recent_ds:
                 # Return empty dashboard summary state
                 return {
@@ -58,9 +72,26 @@ class AnalyticsService:
         if not ds:
             raise ValueError(f"Dataset with ID {dataset_id} not found.")
             
-        file_path = os.path.join("storage", "datasets", f"{dataset_id}.parquet")
+        if user_uuid and ds.uploaded_by != user_uuid:
+            # If the dataset doesn't belong to this user, try to get their most recent one
+            recent_ds = db.query(Dataset).filter(Dataset.uploaded_by == user_uuid).order_by(Dataset.created_at.desc()).first()
+            if not recent_ds:
+                return {
+                    "dataset_id": "",
+                    "filename": "None",
+                    "domain": "Generic Business Dataset",
+                    "confidence_score": 0.0,
+                    "record_count": 0,
+                    "kpis": [],
+                    "charts": [],
+                    "insights": ["No business datasets uploaded yet. Go to Upload Dataset to import a file."]
+                }
+            ds = recent_ds
+            dataset_uuid = ds.dataset_id
+            
+        file_path = os.path.join("storage", "datasets", f"{dataset_uuid}.parquet")
         if not os.path.exists(file_path):
-            raise FileNotFoundError(f"Parquet file for dataset {dataset_id} is missing.")
+            raise FileNotFoundError(f"Parquet file for dataset {dataset_uuid} is missing.")
             
         # 2. Query KPIs dynamically using DuckDB
         kpi_list = []

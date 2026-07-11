@@ -151,7 +151,7 @@ class DynamicChart(BaseModel):
     data: List[Dict[str, Any]]
 
 class DynamicDashboardResponse(BaseModel):
-    dataset_id: UUID
+    dataset_id: str
     filename: str
     domain: str
     confidence_score: float

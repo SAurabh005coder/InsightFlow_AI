@@ -34,12 +34,16 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
         });
         setDatasets(res.data);
         const stored = localStorage.getItem('active_dataset_id');
-        if (stored) {
+        const datasetExists = res.data.some((d: any) => d.dataset_id === stored);
+        if (stored && datasetExists) {
           setActiveDataset(stored);
         } else if (res.data.length > 0) {
           const firstId = res.data[0].dataset_id;
           localStorage.setItem('active_dataset_id', firstId);
           setActiveDataset(firstId);
+        } else {
+          localStorage.removeItem('active_dataset_id');
+          setActiveDataset('');
         }
       } catch (err) {
         console.error('Failed to load datasets list', err);
@@ -66,6 +70,7 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
 
   const handleLogout = () => {
     logout();
+    localStorage.removeItem('active_dataset_id');
     navigate('/login');
   };
 

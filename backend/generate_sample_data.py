@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 
 def generate_data():
     np.random.seed(42)
-    rows = 150
+    rows = 2500
     
     # Base lists
     store_options = [
@@ -31,12 +31,13 @@ def generate_data():
     ]
     
     data = []
-    base_date = datetime.now() - timedelta(days=60)
+    base_date = datetime.now() - timedelta(days=365)
     
     for i in range(rows):
         # Determine order
         order_num = f"ORD-{1000 + i // 2}" # Some multiple items per order
-        order_date = (base_date + timedelta(days=i // 3)).strftime("%Y-%m-%d %H:%M:%S")
+        day_offset = int(i * 365 / rows)
+        order_date = (base_date + timedelta(days=day_offset, hours=np.random.randint(0, 24), minutes=np.random.randint(0, 60))).strftime("%Y-%m-%d %H:%M:%S")
         
         # Select entities
         store = store_options[np.random.randint(len(store_options))]
